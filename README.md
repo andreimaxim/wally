@@ -34,6 +34,42 @@ for `opencode`.
 
 [opencode]: https://opencode.ai/
 
+## Usage
+
+Start a headless `opencode` server:
+
+```bash
+opencode serve
+```
+
+Then run Wally
+
+```bash
+wally
+```
+
+Wally accepts the following options:
+
+- `--prompt path/to/prompt.md` a custom prompt to pass to the model (defaults to `.wally/PROMPT.md` in the current dir)
+- `--plan path/to/PLAN.md` custom path to the implementation plan (defaults to `.wally/PLAN.md` in the current dir)
+- `--status path/to/status.json` custom path to the Wally status file (defaults to `.wally/status.json` in the current dir)
+- `--agent agent-name` which opencode agent to use (defaults to `build`)
+- `--model provider/model` which model to use (defaults to `opencode/grok-code`)
+- `--max-loops NUMBER` the maximum number of loops to run (defaults to `50`, use `0` for infinite loops)
+- `--cooldown NUMBER` number of seconds to wait between the loops (defaults to `2`)
+
+The Wally `status.json` provides information about the current task and future task:
+
+```json
+{
+    "state": "in_progress" | "completed",
+    "summary": "short summary of the completed task",
+    "next": "next task to be implemented"
+}
+```
+
+Obviously, all of this is subject to change
+
 ## Development
 
 To install dependencies:
