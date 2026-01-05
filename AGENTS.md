@@ -7,10 +7,10 @@ This is a Bun-based TypeScript CLI tool.
 
 ```bash
 bun install                       # Install dependencies
-bun run index.ts                  # Run the application
-bun --hot index.ts                # Run with hot reload
+bun run src/index.ts              # Run the application
+bun --hot src/index.ts            # Run with hot reload
 bun test                          # Run all tests
-bun test path/to/file.test.ts     # Run a single test file
+bun test test/file.test.ts        # Run a single test file
 bun test --filter "pattern"       # Run tests matching a pattern
 bun test --coverage               # Run tests with coverage
 bunx tsc --noEmit                 # Type check without emitting
@@ -110,7 +110,7 @@ Strict mode enabled with additional checks:
 ### Naming Conventions
 
 - **Files**: `kebab-case.ts` (e.g., `script-runner.ts`)
-- **Test files**: `*.test.ts` co-located with source
+- **Test files**: `*.test.ts` in `test/` directory, mirroring `src/` structure
 - **Types/Interfaces**: `PascalCase` (e.g., `CliOptions`)
 - **Functions/Variables**: `camelCase` (e.g., `runScript`)
 - **Constants**: `SCREAMING_SNAKE_CASE` for module-level
@@ -189,11 +189,15 @@ describe("ScriptRunner", () => {
 
 ```
 wally/
-├── index.ts        # Entry point, CLI argument parsing
 ├── src/
+│   ├── index.ts    # Entry point, CLI argument parsing
 │   ├── runner.ts   # Script execution logic
 │   ├── client.ts   # HTTP/SSE client for opencode
 │   └── types.ts    # Shared type definitions
-├── *.test.ts       # Test files (co-located)
+├── test/           # Test files, mirroring src/ structure
+│   ├── runner.test.ts
+│   └── client.test.ts
+├── tsconfig.json
+├── package.json
 └── AGENTS.md       # This file
 ```
