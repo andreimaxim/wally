@@ -7,32 +7,33 @@ Wally is a robot from the future that is responsible with handling the AI garbag
 
 ## Overview
 
-One of the more revolutionary ideas involving LLMs was [Geoffrey Huntley's "Ralph Wiggum as a software engineer"][ralph]
-approach, which boils down to running the following process in a loop:
-
-1. The LLM is given a task from an implementation plan
-2. The LLM implements the task
-3. The LLM updates the implementation plan
-
-The loop stops when there are no tasks for the LLM to implement.
-
-This approach can be very useful when working with a piece of software that does not have good test coverage.
-In this case, the loop will become:
-
-1. Implement the next [characterization test][char-test] based on a list of tests to be implemented
-2. Run tests using a code coverage tool like [SimpleCov] or [mutant]
-3. Update the list of tests to be done
-
-[ralph]: https://ghuntley.com/ralph/
-[char-test]: https://michaelfeathers.silvrback.com/characterization-testing
-[SimpleCov]: https://github.com/simplecov-ruby/simplecov
-[mutant]: https://github.com/mbj/mutant/tree/main
-
-The original implementation used a basic bash loop, but more modern AI agents like [opencode] use a client-server
-architecture which allows more fine-grained control over an API. So, in a sense, `Wally` is an orchestrator
-for `opencode`.
+Wally is a very simple **orchestrator** for [opencode] for **agent invocation with context replay**, meaning
+it will create a new conversation with the LLM with a specific prompt and, once the conversation is idle,
+a new conversation is created with the same prompt until a stop condition is reached.
 
 [opencode]: https://opencode.ai/
+
+This approach can be very useful when combining with iterative prompts. For example:
+
+> Analyze the `@app/models/user.rb` and `@test/models/user_test.r`b and create the next
+> [characterization test][char-test] required to increase the code coverage for that class.
+>
+> You can verify the code coverage by running the following command:
+>
+> COVERAGE=true bin/rails test test/models/user_test.rb
+>
+> Once the test passes, append what you have learned to `@docs/models/user.md`.
+
+[char-test]: https://michaelfeathers.silvrback.com/characterization-testing
+
+The **stop condition** can be any user generated script that exists with a non-zero condition. For example,
+the script can check the code coverage for the specified file and, if the percentage is 100% or decreased
+from the last run, returns a non-zero exit code.
+
+One of the side-effects of Wally is that it allows you to implement a loop similar to the one described
+in [Geoffrey Huntley's "Ralph Wiggum as a software engineer"][ralph] article.
+
+[ralph]: https://ghuntley.com/ralph/
 
 ## Usage
 
@@ -48,27 +49,21 @@ Then run Wally
 wally
 ```
 
-Wally accepts the following options:
+Wally _requires_ following options:
 
-- `--prompt path/to/prompt.md` a custom prompt to pass to the model (defaults to `.wally/PROMPT.md` in the current dir)
-- `--plan path/to/PLAN.md` custom path to the implementation plan (defaults to `.wally/PLAN.md` in the current dir)
-- `--status path/to/status.json` custom path to the Wally status file (defaults to `.wally/status.json` in the current dir)
+- `--prompt path/to/prompt` a custom prompt to pass to the model
+- `--check path/to/script` a path to an executable (or script) that will run before initializing a new LLM session
+- `--max-loops NUMBER` the maximum number of loops to run (defaults to `50`, use `0` for infinite loops)
+- `--cooldown NUMBER` number of seconds to wait between the loops (defaults to `3`)
+
+Note that the `prompt` can contain references to other files (e.g. a `PLAN.md` or a `prd.json`).
+
+Wally also _accepts_ the following options:
+
 - `--agent agent-name` which opencode agent to use (defaults to `build`)
 - `--model provider/model` which model to use (defaults to `opencode/grok-code`)
-- `--max-loops NUMBER` the maximum number of loops to run (defaults to `50`, use `0` for infinite loops)
-- `--cooldown NUMBER` number of seconds to wait between the loops (defaults to `2`)
 
-The Wally `status.json` provides information about the current task and future task:
-
-```json
-{
-    "state": "in_progress" | "completed",
-    "summary": "short summary of the completed task",
-    "next": "next task to be implemented"
-}
-```
-
-Obviously, all of this is subject to change
+Obviously, all of this is subject to change.
 
 ## Development
 
