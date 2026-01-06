@@ -36,7 +36,7 @@ const { values } = parseArgs({
   options: {
     prompt: { type: "string", short: "p" },
     check: { type: "string", short: "c" },
-    "max-loops": { type: "string", default: "50" },
+    wait: { type: "string", short: "w", default: "3" },
     verbose: { type: "boolean", short: "v", default: false },
   },
   allowPositionals: true,
@@ -118,6 +118,9 @@ Strict mode enabled with additional checks:
 
 ### Style Rules
 
+- **No semicolons** - Omit semicolons at the end of statements
+- **Explicit types at boundaries** - Explicit return types for exported functions; infer types for local variables and private helpers
+
 ```typescript
 // AVOID: unnecessary destructuring
 const { value } = obj; // no
@@ -162,17 +165,15 @@ if (exitCode !== 0) {
 ### Testing
 
 ```typescript
-import { test, expect, describe } from "bun:test";
+import { test, expect } from "bun:test";
 
-describe("ScriptRunner", () => {
-  test("returns exit code on success", async () => {
-    const result = await runScript("./test-script.sh");
-    expect(result.exitCode).toBe(0);
-  });
+test("returns exit code on success", async () => {
+  const result = await runScript("./test-script.sh");
+  expect(result.exitCode).toBe(0);
+});
 
-  test("throws on script not found", async () => {
-    expect(runScript("./nonexistent.sh")).rejects.toThrow();
-  });
+test("throws on script not found", async () => {
+  expect(runScript("./nonexistent.sh")).rejects.toThrow();
 });
 ```
 

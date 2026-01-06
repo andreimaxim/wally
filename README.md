@@ -52,7 +52,7 @@ wally --prompt .wally/PROMPT.md --check bin/coverage
 A more complex example:
 
 ```bash
-wally --prompt .wally/PROMPT.md --check bin/coverage --max-loops 50 --cooldown 3 \
+wally --prompt .wally/PROMPT.md --check bin/coverage --limit 50 --wait 3 \
   --agent build --model xai/grok-fast-1
 ```
 
@@ -65,8 +65,8 @@ Note that the `prompt` can contain references to other files (e.g. a `PLAN.md` o
 
 Wally also _accepts_ the following options:
 
-- `--max-loops NUMBER` the maximum number of loops to run (defaults to `50`, use `0` for infinite loops)
-- `--cooldown NUMBER` number of seconds to wait between the loops (defaults to `3`)
+- `--limit NUMBER` the maximum number of agent invocation
+- `--wait NUMBER` number of seconds to wait between the loops (defaults to `3`)
 - `--agent agent-name` which opencode agent to use (defaults to `build`)
 - `--model provider/model` which model to use (defaults to `opencode/grok-code`)
 

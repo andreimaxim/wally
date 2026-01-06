@@ -1,0 +1,7 @@
+{
+  "bun.runtime": "bun",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.typeAware": false
+}
