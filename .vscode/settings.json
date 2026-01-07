@@ -1,7 +1,5 @@
 {
   "bun.runtime": "bun",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.oxc": "always"
-  },
-  "oxc.typeAware": false
+  "oxc.enable": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode"
 }
