@@ -29,7 +29,7 @@ bunx tsc --noEmit                 # Type check without emitting
 ### CLI Argument Parsing
 
 ```typescript
-import { parseArgs } from "util";
+import { parseArgs } from "util"
 
 const { values } = parseArgs({
   args: Bun.argv.slice(2),
@@ -37,10 +37,10 @@ const { values } = parseArgs({
     prompt: { type: "string", short: "p" },
     check: { type: "string", short: "c" },
     wait: { type: "string", short: "w", default: "3" },
-    verbose: { type: "boolean", short: "v", default: false },
+    verbose: { type: "boolean", short: "v", default: false }
   },
-  allowPositionals: true,
-});
+  allowPositionals: true
+})
 ```
 
 ### Running External Scripts Safely
@@ -51,12 +51,12 @@ const proc = Bun.spawn(["./check-script.sh", arg1, arg2], {
   cwd: "/path/to/dir",
   env: { ...process.env, CUSTOM_VAR: "value" },
   stdout: "pipe",
-  stderr: "pipe",
-});
+  stderr: "pipe"
+})
 
-const exitCode = await proc.exited;
-const stdout = await new Response(proc.stdout).text();
-const stderr = await new Response(proc.stderr).text();
+const exitCode = await proc.exited
+const stdout = await new Response(proc.stdout).text()
+const stderr = await new Response(proc.stderr).text()
 ```
 
 ### HTTP Requests
@@ -65,26 +65,26 @@ const stderr = await new Response(proc.stderr).text();
 const response = await fetch("https://api.example.com/data", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ key: "value" }),
-});
+  body: JSON.stringify({ key: "value" })
+})
 const data = await response.json();
 ```
 
 ### Server-Sent Events (SSE)
 
 ```typescript
-const response = await fetch("https://api.example.com/stream");
-const reader = response.body?.getReader();
-const decoder = new TextDecoder();
+const response = await fetch("https://api.example.com/stream")
+const reader = response.body?.getReader()
+const decoder = new TextDecoder()
 
 while (reader) {
-  const { done, value } = await reader.read();
-  if (done) break;
+  const { done, value } = await reader.read()
+  if (done) break
 
-  const chunk = decoder.decode(value, { stream: true });
+  const chunk = decoder.decode(value, { stream: true })
   for (const line of chunk.split("\n")) {
     if (line.startsWith("data: ")) {
-      const data = JSON.parse(line.slice(6));
+      const data = JSON.parse(line.slice(6))
       // Process SSE event
     }
   }
@@ -119,61 +119,65 @@ Strict mode enabled with additional checks:
 ### Style Rules
 
 - **No semicolons** - Omit semicolons at the end of statements
+- **No trailing commas** - Omit trailing commas
 - **Explicit types at boundaries** - Explicit return types for exported functions; infer types for local variables and private helpers
 
 ```typescript
 // AVOID: unnecessary destructuring
-const { value } = obj; // no
-const value = obj.value; // yes
+const { value } = obj // no
+const value = obj.value // yes
 
 // AVOID: else statements - use early returns
 if (error) {
-  return handleError(error);
+  return handleError(error)
 }
 // continue with main logic
 
 // AVOID: try/catch when .catch() suffices
-const result = await operation().catch(() => undefined);
+const result = await operation().catch(() => undefined)
 
 // PREFER: single-word variables where sensible
-const log = Log.create(); // not: const logger = ...
-const config = getConfig(); // not: const configuration = ...
+const log = Log.create() // not: const logger = ...
+const config = getConfig() // not: const configuration = ...
 
 // PREFER: Bun APIs over Node.js equivalents
-const content = await Bun.file(path).text();
-await Bun.write(path, data);
-const exists = await Bun.file(path).exists();
+const content = await Bun.file(path).text()
+await Bun.write(path, data)
+const exists = await Bun.file(path).exists()
 ```
 
 ### Error Handling
 
 ```typescript
 class ScriptError extends Error {
-  constructor(message: string, public exitCode: number) {
-    super(message);
-    this.name = "ScriptError";
+  constructor(
+    message: string,
+    public exitCode: number,
+  ) {
+    super(message)
+    this.name = "ScriptError"
   }
 }
 
 // Fail explicitly - no silent failures
-const exitCode = await proc.exited;
+const exitCode = await proc.exited
 if (exitCode !== 0) {
-  throw new ScriptError(`Script failed`, exitCode);
+  throw new ScriptError(`Script failed`, exitCode)
 }
 ```
 
 ### Testing
 
 ```typescript
-import { test, expect } from "bun:test";
+import { test, expect } from "bun:test"
 
 test("returns exit code on success", async () => {
-  const result = await runScript("./test-script.sh");
-  expect(result.exitCode).toBe(0);
+  const result = await runScript("./test-script.sh")
+  expect(result.exitCode).toBe(0)
 });
 
 test("throws on script not found", async () => {
-  expect(runScript("./nonexistent.sh")).rejects.toThrow();
+  expect(runScript("./nonexistent.sh")).rejects.toThrow()
 });
 ```
 
