@@ -12,6 +12,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "citty": "^0.1.6",
     "zod": "^4.3.5"
   }
 }
