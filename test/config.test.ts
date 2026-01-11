@@ -5,9 +5,9 @@ const testPromptPath = "test/fixtures/PROMPT.md"
 const testCheckPath = "test/fixtures/check.sh"
 
 test("prompt is extracted from args", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+    const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
 
-  expect(config.prompt).toBe(testPromptPath)
+    expect(config.prompt).toBe(testPromptPath)
 })
 
 test("prompt points to a real file", async () => {
@@ -70,4 +70,34 @@ test("default wait time between invocations is 3", async () => {
   const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
 
   expect(config.wait).toBe(3)
+})
+
+test("agent is extracted from args", async () => {
+  const config = await parseConfig({
+    prompt: testPromptPath,
+    check: testCheckPath,
+    agent: "review"
+  })
+
+  expect(config.agent).toBe("review")
+})
+test("default agent is 'build'", async () => {
+  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+
+  expect(config.agent).toBe("build")
+})
+
+test("model is extracted from args", async () => {
+  const config = await parseConfig({
+    prompt: testPromptPath,
+    check: testCheckPath,
+    model: "custom/model"
+  })
+
+  expect(config.model).toBe("custom/model")
+})
+test("default model is 'opencode/grok-code-fast-1'", async () => {
+  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+
+  expect(config.model).toBe("opencode/grok-code-fast-1")
 })
