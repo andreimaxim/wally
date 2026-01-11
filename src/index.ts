@@ -1,1 +1,4 @@
-console.log("Hello via Bun!")
+import { runMain } from "citty"
+import { main } from "@/cli"
+
+runMain(main)

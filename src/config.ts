@@ -1,11 +1,4 @@
-import { z } from "zod"
-
-const DEFAULTS = {
-    limit: 0,
-    wait: 3,
-    agent: "build",
-    model: "opencode/grok-code-fast-1"
-}
+import { z, ZodError } from "zod"
 
 /*
   In general, the validation error messages should not contain the subject
@@ -14,22 +7,56 @@ const DEFAULTS = {
 
   The final formatting (e.g `--prompt is missing`) should be perfomed by the
   caller, since this module should not know it's used to validate CLI args.
-*/
-const Config = z.object({
+ */
+const ConfigSchema = z.object({
     prompt: z.string("is required").refine((path) => Bun.file(path).exists(), {
         message: "file does not exist"
     }),
     check: z.string("is required").refine((path) => Bun.file(path).exists(), {
         message: "file does not exist"
     }),
-    limit: z.coerce.number().default(DEFAULTS.limit),
-    wait: z.coerce.number().default(DEFAULTS.wait),
-    agent: z.string().default(DEFAULTS.agent),
-    model: z.string().default(DEFAULTS.model)
+    limit: z.coerce.number(),
+    wait: z.coerce.number(),
+    agent: z.string(),
+    model: z.string()
 })
 
-export type Config = z.infer<typeof Config>
+export type ConfigArgs = z.input<typeof ConfigSchema>
+export type Config = z.infer<typeof ConfigSchema>
 
-export async function parseConfig(args: z.input<typeof Config>): Promise<Config> {
-  return Config.parseAsync(args)
+export class ConfigError extends Error {
+    path?: string
+    code: string
+    reason: string
+
+    constructor(reason: string, code: string, path?: string) {
+        const message = reason.includes(code) ? reason : `${reason} (${code})`
+        super(message)
+        this.name = "ConfigError"
+        this.reason = reason
+        this.code = code
+        this.path = path
+    }
+}
+
+const toConfigError = (error: ZodError) => {
+    const issue = error.issues[0]
+    if (!issue) {
+        return error
+    }
+
+    const path = typeof issue.path[0] === "string" ? issue.path[0] : undefined
+    const reason = issue.message || issue.code
+
+    return new ConfigError(reason, issue.code, path)
+}
+
+export async function parseConfig(args: ConfigArgs): Promise<Config> {
+    return ConfigSchema.parseAsync(args).catch((error: unknown) => {
+        if (error instanceof ZodError) {
+            throw toConfigError(error)
+        }
+
+        throw error
+    })
 }

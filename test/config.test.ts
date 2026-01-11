@@ -3,101 +3,108 @@ import { parseConfig } from "@/config"
 
 const testPromptPath = "test/fixtures/PROMPT.md"
 const testCheckPath = "test/fixtures/check.sh"
+const baseArgs = {
+  prompt: testPromptPath,
+  check: testCheckPath,
+  limit: "0",
+  wait: "3",
+  agent: "build",
+  model: "opencode/grok-code-fast-1"
+}
+const parseConfigUnsafe = (args: Partial<typeof baseArgs>) =>
+  parseConfig(args as unknown as Parameters<typeof parseConfig>[0])
 
 test("prompt is extracted from args", async () => {
-    const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+  const config = await parseConfig(baseArgs)
 
-    expect(config.prompt).toBe(testPromptPath)
+  expect(config.prompt).toBe(testPromptPath)
 })
 
 test("prompt points to a real file", async () => {
-  const args = { prompt: "test/fixtures/file-does-not-exist.md", check: testCheckPath }
+  const args = { ...baseArgs, prompt: "test/fixtures/file-does-not-exist.md" }
 
   expect(parseConfig(args)).rejects.toThrow("file does not exist")
 })
 
 test("missing prompt raises an error", async () => {
-  expect(parseConfig({ check: testCheckPath })).rejects.toThrow("is required")
+  const { prompt: _, ...args } = baseArgs
+
+  expect(parseConfigUnsafe(args)).rejects.toThrow("is required")
 })
 
 test("stop condition is extracted from args", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+  const config = await parseConfig(baseArgs)
 
   expect(config.check).toBe(testCheckPath)
 })
 
 test("stop condition has to be runnable", async () => {
-  const args = { prompt: testPromptPath, check: "test/fixtures/missing-script" }
+  const args = { ...baseArgs, check: "test/fixtures/missing-script" }
 
   expect(parseConfig(args)).rejects.toThrow("file does not exist")
 })
 
 test("missing stop condition raises an error", async () => {
-  expect(parseConfig({ prompt: testPromptPath })).rejects.toThrow("is required")
+  const { check: _, ...args } = baseArgs
+
+  expect(parseConfigUnsafe(args)).rejects.toThrow("is required")
 })
 
 test("maximum number of invocations is extracted from the args", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath, limit: "5" })
+  const config = await parseConfig({ ...baseArgs, limit: "5" })
 
   expect(config.limit).toBe(5)
 })
 
 test("maximum number of invocations has to be a number", async () => {
-  const args = { prompt: testPromptPath, check: testCheckPath, limit: "many" }
+  const args = { ...baseArgs, limit: "many" }
 
   expect(parseConfig(args)).rejects.toThrow("invalid_type")
 })
 
-test("default number of maximum invocations is 0", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+test("missing limit raises an error", async () => {
+  const { limit: _, ...args } = baseArgs
 
-  expect(config.limit).toBe(0)
+  expect(parseConfigUnsafe(args)).rejects.toThrow()
 })
 
 test("wait time between invocations is extracted from the args", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath, wait: "10" })
+  const config = await parseConfig({ ...baseArgs, wait: "10" })
 
   expect(config.wait).toBe(10)
 })
 
 test("default wait time between invocations has to be a number", async () => {
-  const args = { prompt: testPromptPath, check: testCheckPath, wait: "an hour" }
+  const args = { ...baseArgs, wait: "an hour" }
 
   expect(parseConfig(args)).rejects.toThrow("invalid_type")
 })
 
-test("default wait time between invocations is 3", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+test("missing wait raises an error", async () => {
+  const { wait: _, ...args } = baseArgs
 
-  expect(config.wait).toBe(3)
+  expect(parseConfigUnsafe(args)).rejects.toThrow()
 })
 
 test("agent is extracted from args", async () => {
-  const config = await parseConfig({
-    prompt: testPromptPath,
-    check: testCheckPath,
-    agent: "review"
-  })
+  const config = await parseConfig({ ...baseArgs, agent: "review" })
 
   expect(config.agent).toBe("review")
 })
-test("default agent is 'build'", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
+test("missing agent raises an error", async () => {
+  const { agent: _, ...args } = baseArgs
 
-  expect(config.agent).toBe("build")
+  expect(parseConfigUnsafe(args)).rejects.toThrow()
 })
 
 test("model is extracted from args", async () => {
-  const config = await parseConfig({
-    prompt: testPromptPath,
-    check: testCheckPath,
-    model: "custom/model"
-  })
+  const config = await parseConfig({ ...baseArgs, model: "custom/model" })
 
   expect(config.model).toBe("custom/model")
 })
-test("default model is 'opencode/grok-code-fast-1'", async () => {
-  const config = await parseConfig({ prompt: testPromptPath, check: testCheckPath })
 
-  expect(config.model).toBe("opencode/grok-code-fast-1")
+test("missing model raises an error", async () => {
+  const { model: _, ...args } = baseArgs
+
+  expect(parseConfigUnsafe(args)).rejects.toThrow()
 })
