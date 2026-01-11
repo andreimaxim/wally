@@ -68,7 +68,7 @@ Wally also _accepts_ the following options:
 - `--limit NUMBER` the maximum number of agent invocation
 - `--wait NUMBER` number of seconds to wait between the loops (defaults to `3`)
 - `--agent agent-name` which opencode agent to use (defaults to `build`)
-- `--model provider/model` which model to use (defaults to `opencode/grok-code`)
+- `--model provider/model` which model to use (defaults to `opencode/grok-code-fast-1`)
 
 Obviously, all of this is subject to change.
 
