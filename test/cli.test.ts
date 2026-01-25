@@ -191,6 +191,24 @@ test("builds config from required args", async () => {
         model: "opencode/grok-code-fast-1"
     })
 })
+
+test("ignores extra CLI args", async () => {
+    const result = await runCommand(main, {
+        rawArgs: ["--prompt", testPromptPath, "--check", testCheckPath, "--foo", "--bar", "baz"]
+    })
+
+    expect(result.result).toMatchObject({
+        prompt: testPromptPath,
+        check: testCheckPath,
+        limit: 0,
+        wait: 3,
+        agent: "build",
+        model: "opencode/grok-code-fast-1"
+    })
+    expect(result.result).not.toHaveProperty("foo")
+    expect(result.result).not.toHaveProperty("bar")
+})
+
 test("fails when prompt file is missing", async () => {
     const missingPromptPath = "test/fixtures/file-does-not-exist.md"
 

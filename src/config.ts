@@ -1,5 +1,11 @@
 import { z, ZodError } from "zod"
 
+type ConfigIssue = {
+    path?: string
+    code: string
+    reason: string
+}
+
 /*
   In general, the validation error messages should not contain the subject
   since it can be inferred from the object that is causing them (e.g.
@@ -15,43 +21,54 @@ const ConfigSchema = z.object({
     check: z.string("is required").refine((path) => Bun.file(path).exists(), {
         message: "file does not exist"
     }),
-    limit: z.coerce.number(),
-    wait: z.coerce.number(),
-    agent: z.string(),
-    model: z.string()
+    limit: z.coerce.number().default(0),
+    wait: z.coerce.number().default(3),
+    agent: z.string().default("build"),
+    model: z.string().default("opencode/grok-code-fast-1")
 })
 
-export type ConfigArgs = z.input<typeof ConfigSchema>
 export type Config = z.infer<typeof ConfigSchema>
 
-export class ConfigError extends Error {
+class ConfigError extends Error {
     path?: string
     code: string
     reason: string
+    issues: ConfigIssue[]
 
-    constructor(reason: string, code: string, path?: string) {
+    constructor(reason: string, code: string, path: string | undefined, issues: ConfigIssue[]) {
         const message = reason.includes(code) ? reason : `${reason} (${code})`
         super(message)
         this.name = "ConfigError"
         this.reason = reason
         this.code = code
         this.path = path
+        this.issues = issues
     }
 }
 
-const toConfigError = (error: ZodError) => {
-    const issue = error.issues[0]
+const toIssues = (error: ZodError): ConfigIssue[] =>
+    error.issues.map((issue) => {
+        const path = typeof issue.path[0] === "string" ? issue.path[0] : undefined
+        const reason = issue.message || issue.code
+
+        return {
+            path,
+            code: issue.code,
+            reason
+        }
+    })
+
+const toConfigError = (error: ZodError): ConfigError => {
+    const issues = toIssues(error)
+    const issue = issues[0]
     if (!issue) {
-        return error
+        return new ConfigError("validation error", "unknown", undefined, [])
     }
 
-    const path = typeof issue.path[0] === "string" ? issue.path[0] : undefined
-    const reason = issue.message || issue.code
-
-    return new ConfigError(reason, issue.code, path)
+    return new ConfigError(issue.reason, issue.code, issue.path, issues)
 }
 
-export async function parseConfig(args: ConfigArgs): Promise<Config> {
+export async function parseConfig(args: unknown): Promise<Config> {
     return ConfigSchema.parseAsync(args).catch((error: unknown) => {
         if (error instanceof ZodError) {
             throw toConfigError(error)

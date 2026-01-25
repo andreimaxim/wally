@@ -1,12 +1,43 @@
 import { defineCommand } from "citty"
-import { ConfigError, parseConfig } from "@/config"
+import { parseConfig } from "@/config"
 
-const formatConfigError = (error: ConfigError) => {
-    if (!error.path) {
-        return error
+type ConfigIssue = {
+    path?: string
+    code: string
+    reason: string
+}
+
+type ConfigErrorLike = Error & {
+    name: "ConfigError"
+    path?: string
+    reason?: string
+    issues?: ConfigIssue[]
+}
+
+const isConfigError = (error: unknown): error is ConfigErrorLike => {
+    if (!(error instanceof Error)) {
+        return false
     }
 
-    return new Error(`--${error.path} ${error.reason}`)
+    if (error.name !== "ConfigError") {
+        return false
+    }
+
+    const err = error as Partial<ConfigErrorLike>
+
+    return typeof err.reason === "string" || Array.isArray(err.issues)
+}
+
+const formatConfigError = (error: ConfigErrorLike): Error => {
+    const issue = error.issues?.[0]
+    const path = issue?.path ?? error.path
+    const reason = issue?.reason ?? error.reason ?? error.message
+
+    if (!path) {
+        return new Error(reason)
+    }
+
+    return new Error(`--${path} ${reason}`)
 }
 
 export const main = defineCommand({
@@ -27,28 +58,24 @@ export const main = defineCommand({
         },
         limit: {
             type: "string",
-            alias: "l",
-            default: "0"
+            alias: "l"
         },
         wait: {
             type: "string",
-            alias: "w",
-            default: "3"
+            alias: "w"
         },
         agent: {
             type: "string",
-            alias: "a",
-            default: "build"
+            alias: "a"
         },
         model: {
             type: "string",
-            alias: "m",
-            default: "opencode/grok-code-fast-1"
+            alias: "m"
         }
     },
     async run(context) {
         return parseConfig(context.args).catch((error) => {
-            if (error instanceof ConfigError) {
+            if (isConfigError(error)) {
                 throw formatConfigError(error)
             }
 
